@@ -75,6 +75,18 @@ if st.session_state.uploaded_data:
             combined_df[col] = pd.to_numeric(combined_df[col], errors="coerce")
 
     # ---------------------------------------------------
+    # NORMALIZĂM COLOANELE DE TEXT
+    # ---------------------------------------------------
+    # Unele coloane (ex: coduri de produs) pot avea în Excel un amestec de
+    # numere și text (ex: "12345" și "DISCOUNT_CASH_11" în aceeași coloană).
+    # Streamlit încearcă să convertească automat tabelul la un format optim
+    # (Arrow) și crapă dacă găsește tipuri amestecate. Transformăm toate
+    # coloanele care NU sunt numerice în text simplu, ca să evităm eroarea.
+    for col in combined_df.columns:
+        if col not in numeric_columns:
+            combined_df[col] = combined_df[col].astype(str).replace("nan", "")
+
+    # ---------------------------------------------------
     # FILTRE
     # ---------------------------------------------------
     st.subheader("Filtre")
@@ -206,15 +218,15 @@ if st.session_state.uploaded_data:
             fig_map.update_geos(fitbounds="locations", visible=False)
             fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550)
 
-            st.plotly_chart(fig_map, use_container_width=True)
+            st.plotly_chart(fig_map, width='stretch')
 
             if not nepotrivite.empty:
                 with st.expander("Județe care nu au putut fi potrivite pe hartă"):
-                    st.dataframe(nepotrivite, use_container_width=True)
+                    st.dataframe(nepotrivite, width='stretch')
 
         except Exception as e:
             st.warning(f"Harta nu a putut fi încărcată: {e}")
-            st.dataframe(sales_by_district, use_container_width=True)
+            st.dataframe(sales_by_district, width='stretch')
     else:
         st.info(
             "Pentru a afișa harta este nevoie de coloanele "
@@ -274,7 +286,7 @@ if st.session_state.uploaded_data:
                 hole=0.5,
             )
             fig_brand_donut.update_traces(textinfo="percent+label")
-            st.plotly_chart(fig_brand_donut, use_container_width=True)
+            st.plotly_chart(fig_brand_donut, width='stretch')
         else:
             st.info("Lipsesc coloanele necesare pentru acest grafic.")
 
@@ -295,7 +307,7 @@ if st.session_state.uploaded_data:
                 hole=0.5,
             )
             fig_channel_donut.update_traces(textinfo="percent+label")
-            st.plotly_chart(fig_channel_donut, use_container_width=True)
+            st.plotly_chart(fig_channel_donut, width='stretch')
         else:
             st.info("Lipsesc coloanele necesare pentru acest grafic.")
 
@@ -313,7 +325,7 @@ if st.session_state.uploaded_data:
                 .sort_values("Vz Val", ascending=False)
                 .head(10)
             )
-            st.dataframe(top_clients, use_container_width=True)
+            st.dataframe(top_clients, width='stretch')
         else:
             st.info("Lipsesc coloanele necesare pentru acest tabel.")
 
@@ -326,7 +338,7 @@ if st.session_state.uploaded_data:
                 .sort_values("Vz Val", ascending=False)
                 .head(5)
             )
-            st.dataframe(top_products, use_container_width=True)
+            st.dataframe(top_products, width='stretch')
         else:
             st.info("Lipsesc coloanele necesare pentru acest tabel.")
 
@@ -334,7 +346,7 @@ if st.session_state.uploaded_data:
     # DATE FILTRATE
     # ---------------------------------------------------
     st.subheader("Date filtrate")
-    st.dataframe(filtered_df, use_container_width=True)
+    st.dataframe(filtered_df, width='stretch')
 
 else:
     st.info("Încarcă fișiere Excel pentru a vedea dashboard-ul.")
